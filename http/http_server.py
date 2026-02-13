@@ -1,5 +1,8 @@
 import json
 import socket
+from http.data_types import HTTPRequest
+from http.data_types import HTTPResponse
+
 class server:
     def __init__(self,port):
         self.socket = socket.socket()
@@ -30,25 +33,16 @@ class server:
             request_body = encoded_req_body.decode()
             print("recived request from ip address",addr,"with request",request_body)
             message={"name":"mohamed emam","job":"ai engineer"}
-            response = self.create_response_encoded(message,"application/json")
+            headers={"Content-Type":"application/json"
+                        }
+            response = HTTPResponse(body=message,
+                                    status_code=200,
+                                    reason="",
+                                    headers=headers
+                                    ).to_bytes()
             self.return_response(connection,response)
             connection.close() 
 
-    @staticmethod
-    def create_response_encoded(message,content_type):
-        if isinstance(message,dict):
-            response_body = json.dumps(message)
-        elif isinstance(message,str):
-            response_body = message
-        response_body = response_body.encode()
-        response_header = ( "HTTP/1.1 200 OK\r\n"
-                            f"Content-Type: {content_type}\r\n"
-                            f"Content-Length: {len(response_body)}\r\n"
-                            "\r\n"
-                            ).encode()
-        response = response_header + response_body
-        return response
-    
     @staticmethod
     def return_response(connection,response):
         total_sent = 0
@@ -81,5 +75,3 @@ class server:
     
 app=server(port=3002)
 app.run()
-
-#curl http://127.0.0.1:3002 -d '{"mohamed":"emam"}' -H "Content-Type: application/json"
